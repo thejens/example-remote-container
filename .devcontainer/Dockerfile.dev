@@ -1,11 +1,20 @@
 # This file will be concatenated to the bottom of Dockerfile.prod , hence no FROM statement
+# Use it to install things like linters or CLIs that are not needed in prod
 USER root
 
+# this is where we copy code into the prod image
+# let's remove it in the dev image, as we mount the code at run instead
+RUN rm -rf /src
+
+# Let's install some packages, including bash-completion
 RUN apt-get update && apt-get install -y wget bash-completion curl git
+
+# Let's install some python requirements
 COPY .devcontainer/dev_requirements.txt /tmp/requirements.txt
 RUN pip install -r /tmp/requirements.txt \
  && rm /tmp/requirements.txt
 
+# Install GCloud CLI
 RUN wget https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.tar.gz -P /tmp \
  && mkdir -p /usr/local/gcloud \
  && tar -C /usr/local/gcloud -xvf /tmp/google-cloud-sdk.tar.gz \
@@ -13,12 +22,16 @@ RUN wget https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.tar.gz -P /t
  && rm /tmp/google-cloud-sdk.tar.gz \
  && gcloud components install gke-gcloud-auth-plugin
 
+# Install Kubectl for Kuberentes
 RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/arm64/kubectl"
 RUN install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
+# Make me an owner of the commandhistory
 RUN mkdir /commandhistory \
  && touch /commandhistory/.bash_history \
  && chown -R $USERNAME /commandhistory
 
+# Change the PATH so that any scripts in the bin folder
+# become executable in terminals
 ENV PATH=/workspaces/example-remote-container/bin:$PATH
 USER $USERNAME

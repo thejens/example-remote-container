@@ -1,2 +1,3 @@
+# Just some tools we only need in the dev environment
 black==23.7.0
-jupyterlab==4.0.3
+jupyterlab==4.0.3 # Careful, this package might install dependencies that are needed in prod, that you may have omitted from prod.
