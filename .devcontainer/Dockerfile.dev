@@ -16,11 +16,9 @@ RUN wget https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.tar.gz -P /t
 RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/arm64/kubectl"
 RUN install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
-RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.bash_history" \
- && mkdir /commandhistory \
+RUN mkdir /commandhistory \
  && touch /commandhistory/.bash_history \
- && chown -R $USERNAME /commandhistory \
- && echo $SNIPPET >> "/home/${USERNAME}/.bashrc"
+ && chown -R $USERNAME /commandhistory
 
 ENV PATH=/workspaces/example-remote-container/bin:$PATH
 USER $USERNAME
