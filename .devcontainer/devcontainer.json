@@ -1,0 +1,71 @@
+{
+	"name": "Local dev",
+	"build": {
+		"dockerfile": "Dockerfile.generated",
+		"context": "..",
+		"args": {
+			"USERNAME": "${localEnv:USER}"
+		}
+	},
+	"initializeCommand": ".devcontainer/initialize.sh",
+	"mounts": [
+		"source=${localEnv:HOME}/.config/gcloud,target=/home/${localEnv:USER}/.config/gcloud,type=bind,consistency=cached",
+		"source=${localEnv:HOME}/.kube,target=/home/${localEnv:USER}/.kube,type=bind,consistency=cached",
+		"source=${localWorkspaceFolder}/.devcontainer/.bashrc,target=/home/${localEnv:USER}/.bashrc,type=bind,consistency=cached",
+		"source=commandhistory-volume,target=/commandhistory,type=volume"
+	],
+	"containerEnv": {
+		"PYTHONPATH": "/workspaces/example-remote-container/some-python-lib/src:${PYTHONPATH}",
+		"PYDEVD_DISABLE_FILE_VALIDATION": "1"
+	},
+	"runArgs": [
+		"--env-file",
+		".devcontainer/container.env.generated",
+		"--network",
+		"host"
+	],
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"files.trimTrailingWhitespace": true,
+				"restoreTerminals.terminals": [
+					{
+						"splitTerminals": [
+							{
+								"name": "Jupyter Server",
+								"commands": [
+									"jupyter-lab"
+								],
+								"shouldRunCommands": true
+							}
+						]
+					},
+					{
+						"splitTerminals": [
+							{
+								"name": "Terminal",
+								"commands": [],
+								"shouldRunCommands": false
+							}
+						]
+					}
+				],
+				"terminal.integrated.defaultProfile.linux": "bash",
+				"terminal.integrated.profiles.linux": {
+					"bash": {
+						"path": "/bin/bash"
+					}
+				},
+				"python.pythonPath": "/usr/local/bin/python",
+				"python.languageServer": "Pylance"
+			},
+			"extensions": [
+				"ms-python.python",
+				"visualstudioexptteam.vscodeintellicode",
+				"emeraldwalk.RunOnSave",
+				"ethansk.restore-terminals"
+			]
+		}
+	},
+	"remoteUser": "${localEnv:USER}"
+}

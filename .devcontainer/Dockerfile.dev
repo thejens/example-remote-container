@@ -1,0 +1,26 @@
+# This file will be concatenated to the bottom of Dockerfile.prod , hence no FROM statement
+USER root
+
+RUN apt-get update && apt-get install -y wget bash-completion curl git
+COPY .devcontainer/dev_requirements.txt /tmp/requirements.txt
+RUN pip install -r /tmp/requirements.txt \
+ && rm /tmp/requirements.txt
+
+RUN wget https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.tar.gz -P /tmp \
+ && mkdir -p /usr/local/gcloud \
+ && tar -C /usr/local/gcloud -xvf /tmp/google-cloud-sdk.tar.gz \
+ && /usr/local/gcloud/google-cloud-sdk/install.sh \
+ && rm /tmp/google-cloud-sdk.tar.gz \
+ && gcloud components install gke-gcloud-auth-plugin
+
+RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/arm64/kubectl"
+RUN install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.bash_history" \
+ && mkdir /commandhistory \
+ && touch /commandhistory/.bash_history \
+ && chown -R $USERNAME /commandhistory \
+ && echo $SNIPPET >> "/home/${USERNAME}/.bashrc"
+
+ENV PATH=/workspaces/example-remote-container/bin:$PATH
+USER $USERNAME
